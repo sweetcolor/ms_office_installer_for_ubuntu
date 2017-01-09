@@ -4,6 +4,10 @@ import stat
 # import getpass
 
 
+__version__ = '0.1.1'
+__author__ = 'Yurii Zhytskyi'
+
+
 class MSOfficeInstaller:
     def __init__(self, file_name):
         self.f_name = file_name
