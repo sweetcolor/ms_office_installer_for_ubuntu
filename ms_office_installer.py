@@ -1,6 +1,6 @@
 import os
 import stat
-import subprocess
+# import subprocess
 # import getpass
 
 
@@ -20,14 +20,12 @@ class MSOfficeInstaller:
         return f_permissions
 
     def run_installer(self):
-        prefix = 'wine32office'
+        prefix = 'wine32office2'
         config_directory = '.'
         office_installer_name = '/media/open64/Data/Установки/office.2010.x86.iso'
-        cmd = ['./%s' % self.f_name, '-p', prefix, '-o', office_installer_name, '-c', config_directory]
-        # passwd = self.getpass()
-        p = subprocess.run(cmd, stdout=subprocess.PIPE)
-        print(p.args)
-        print(p.stdout.decode())
+        cmd = ['./%s' % self.f_name, '-p', prefix, '-o', office_installer_name, '-c', config_directory, '-v', '-b']
+        # p = subprocess.run(cmd, stdout=subprocess.PIPE)
+        os.system(' '.join(cmd))
 
     # this no need already but I leave this here as example
     @staticmethod
