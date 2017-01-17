@@ -130,8 +130,9 @@ installer_file_name = 'installer.sh'
 
 if os.access(installer_file_name, os.F_OK):
     office_installer = MSOfficeInstaller(installer_file_name)
-    office_installer.set_exec_permission()
-    office_installer.run_installer()
+    # TODO run installer form python file
+    # office_installer.set_exec_permission()
+    # office_installer.run_installer()
     office_installer.fix_application_list()
 else:
     print('No installer file.\nPlease check installer.sh file.')

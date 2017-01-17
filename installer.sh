@@ -22,6 +22,7 @@ while [ "$1" != "" ]; do
             version=$1
             ;;
         -h | --help )
+            # TODO installer.sh help
             usage
             exit
             ;;
@@ -81,12 +82,12 @@ function install_wine {
 
 function prepare_wine {
     # install OpenGL
-    sudo apt-get install mesa-utils mesa-utils-extra libgl1-mesa-glx:i386 libgl1-mesa-dev
+    sudo apt-get install -y mesa-utils mesa-utils-extra libgl1-mesa-glx:i386 libgl1-mesa-dev
     # need for x64
     sudo ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/mesa/libGL.so
     sudo ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so /usr/lib/i386-linux-gnu/libGL.so
     # Install winbind. Office installation stops midway if this is not done
-    sudo apt-get install winbind
+    sudo apt-get install -y winbind
 }
 
 function create_wineprefix {
