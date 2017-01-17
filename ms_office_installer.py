@@ -3,9 +3,6 @@ import stat
 import time
 import re
 
-# import subprocess
-# import getpass
-
 
 __version__ = '0.1.1'
 __author__ = 'Yurii Zhytskyi'
@@ -31,14 +28,13 @@ class MSOfficeInstaller:
         config_directory = '.'
         office_installer_name = '/media/open64/Data/Установки/office.2010.x86.iso'
         cmd = ['./%s' % self.f_name, '-p', self.prefix, '-o', office_installer_name, '-c', config_directory, '-v', '-b']
-        # p = subprocess.run(cmd, stdout=subprocess.PIPE)
         os.system(' '.join(cmd))
 
     def fix_application_list(self):
         a1 = time.clock()
         import glob
         curr_path = os.getcwd()
-        os.chdir('%s/.local/share/applications-2' % os.environ['HOME'])
+        os.chdir('%s/.local/share/applications' % os.environ['HOME'])
         programs = dict()
         desktop_files = dict()
         mime_type_list = glob.glob('wine-extension-*.desktop')
@@ -87,6 +83,10 @@ class MSOfficeInstaller:
                     '%s=%s\n' % ('Exec', curr_prog['Exec']['Command'].format(path=path[curr_prog['Exec']['ProgIDOpen']]))
                 )
                 new_desktop_file.write('%s=%s\n' % ('MimeType', ''.join([desktop_files[p]['MimeType'] for p in programs[prog]])))
+        for old_desktop_file in desktop_files:
+            os.remove(old_desktop_file)
+        os.system('update-desktop-database %s/.local/share/applications' % os.environ['HOME'])
+        os.system('update-mime-database %s/.local/share/mime' % os.environ['HOME'])
         os.chdir(curr_path)
 
     # this no need already but I leave this here as example
