@@ -1,5 +1,8 @@
 import os
 import stat
+import time
+import re
+
 # import subprocess
 # import getpass
 
@@ -11,6 +14,7 @@ __author__ = 'Yurii Zhytskyi'
 class MSOfficeInstaller:
     def __init__(self, file_name):
         self.f_name = file_name
+        self.prefix = 'wine32office2'
 
     def set_exec_permission(self):
         file_permissions = self.get_file_permissions()
@@ -24,12 +28,54 @@ class MSOfficeInstaller:
         return f_permissions
 
     def run_installer(self):
-        prefix = 'wine32office2'
         config_directory = '.'
         office_installer_name = '/media/open64/Data/Установки/office.2010.x86.iso'
-        cmd = ['./%s' % self.f_name, '-p', prefix, '-o', office_installer_name, '-c', config_directory, '-v', '-b']
+        cmd = ['./%s' % self.f_name, '-p', self.prefix, '-o', office_installer_name, '-c', config_directory, '-v', '-b']
         # p = subprocess.run(cmd, stdout=subprocess.PIPE)
         os.system(' '.join(cmd))
+
+    def fix_application_list(self):
+        a1 = time.clock()
+        import glob
+        curr_path = os.getcwd()
+        os.chdir('%s/.local/share/applications-2' % os.environ['HOME'])
+        programs = dict()
+        desktop_files = dict()
+        mime_type_list = glob.glob('wine-extension-*.desktop')
+        for mime in mime_type_list:
+            with open(mime) as mime_file:
+                desktop_files[mime] = dict()
+                for line in mime_file:
+                    striped_line = line.strip()
+                    if striped_line and striped_line[0] != '[' and striped_line[-1] != ']':
+                        key, value = striped_line[:striped_line.find('=')], striped_line[striped_line.find('=')+1:]
+                        desktop_files[mime][key] = value
+        for desktop in desktop_files:
+            programs.setdefault(desktop_files[desktop]['Name'], []).append(desktop)
+        wine_prefixes = dict()
+        for desktop in desktop_files:
+            exec_ = desktop_files[desktop]['Exec'].split(' ')
+            for i in exec_:
+                matched = re.match('WINEPREFIX=\\"(.+)\\"', i)
+                if matched:
+                    wine_prefixes.setdefault(matched.group(1), set()).add(exec_[exec_.index('/ProgIDOpen') + 1])
+
+        path = dict()
+        print(time.clock() - a1)
+        for prefix in wine_prefixes:
+            with open('%s/system.reg' % prefix) as reg:
+                reg_file = reg.read()
+                for id_ in wine_prefixes[prefix]:
+                    founded_path = re.search(r'\[Software\\\\Classes\\\\' + '\\.'.join(id_.split('.')) +
+                                             r'\\\\shell\\\\Open\\\\command\]' +
+                                             '((.+\n)+)@=\"(\\\\\")?([^\"]+)\\\\?\"', reg_file, re.IGNORECASE)
+                    if founded_path:
+                        path[id_] = founded_path.groups()[-1].strip(' %1').strip('\\\\')
+        # for prog in programs:
+        #     with open('%s.desktop' % prog, 'w') as new_desktop_file:
+        #         new_desktop_file.write('[Desktop Entry]')
+        #
+        os.chdir(curr_path)
 
     # this no need already but I leave this here as example
     @staticmethod
@@ -53,8 +99,8 @@ installer_file_name = 'installer.sh'
 
 if os.access(installer_file_name, os.F_OK):
     office_installer = MSOfficeInstaller(installer_file_name)
-    office_installer.set_exec_permission()
-    office_installer.run_installer()
+    # office_installer.set_exec_permission()
+    # office_installer.run_installer()
+    office_installer.fix_application_list()
 else:
     print('No installer file.\nPlease check installer.sh file.')
-
