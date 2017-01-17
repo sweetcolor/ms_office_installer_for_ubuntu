@@ -55,11 +55,15 @@ class MSOfficeInstaller:
         wine_prefixes = dict()
         for desktop in desktop_files:
             exec_ = desktop_files[desktop]['Exec'].split(' ')
+            prog_id_ind = exec_.index('/ProgIDOpen')
             for i in exec_:
                 matched = re.match('WINEPREFIX=\\"(.+)\\"', i)
                 if matched:
-                    wine_prefixes.setdefault(matched.group(1), set()).add(exec_[exec_.index('/ProgIDOpen') + 1])
-
+                    wine_prefixes.setdefault(matched.group(1), set()).add(exec_[prog_id_ind + 1])
+            desktop_files[desktop]['Exec'] = {
+                'Command': ' '.join(exec_[:prog_id_ind]) + ' {path} ' + exec_[-1],
+                'ProgIDOpen': exec_[prog_id_ind + 1]
+            }
         path = dict()
         print(time.clock() - a1)
         for prefix in wine_prefixes:
@@ -71,10 +75,18 @@ class MSOfficeInstaller:
                                              '((.+\n)+)@=\"(\\\\\")?([^\"]+)\\\\?\"', reg_file, re.IGNORECASE)
                     if founded_path:
                         path[id_] = founded_path.groups()[-1].strip(' %1').strip('\\\\')
-        # for prog in programs:
-        #     with open('%s.desktop' % prog, 'w') as new_desktop_file:
-        #         new_desktop_file.write('[Desktop Entry]')
-        #
+        for prog in programs:
+            with open('%s.desktop' % prog, 'w') as new_desktop_file:
+                new_desktop_file.write('[Desktop Entry]\n')
+                curr_prog = desktop_files[programs[prog][0]]
+                key_names = ('Type', 'Name', 'Icon', 'NoDisplay', 'StartupNotify')
+                for key in key_names:
+                    if key in curr_prog:
+                        new_desktop_file.write('%s=%s\n' % (key, curr_prog[key]))
+                new_desktop_file.write(
+                    '%s=%s\n' % ('Exec', curr_prog['Exec']['Command'].format(path=path[curr_prog['Exec']['ProgIDOpen']]))
+                )
+                new_desktop_file.write('%s=%s\n' % ('MimeType', ''.join([desktop_files[p]['MimeType'] for p in programs[prog]])))
         os.chdir(curr_path)
 
     # this no need already but I leave this here as example
