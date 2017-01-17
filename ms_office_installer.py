@@ -3,14 +3,13 @@ import stat
 import re
 
 
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 __author__ = 'Yurii Zhytskyi'
 
 
 class MSOfficeInstaller:
     def __init__(self, file_name):
         self.f_name = file_name
-        self.prefix = 'wine32office2'
         self.desktop_files = dict()
         self.programs = dict()
         self.wine_prefixes = dict()
@@ -29,9 +28,8 @@ class MSOfficeInstaller:
         return f_permissions
 
     def run_installer(self):
-        config_directory = '.'
-        office_installer_name = '/media/open64/Data/Установки/office.2010.x86.iso'
-        cmd = ['./%s' % self.f_name, '-p', self.prefix, '-o', office_installer_name, '-c', config_directory, '-v', '-b']
+        import sys
+        cmd = ['./%s' % self.f_name] + sys.argv[1:]
         os.system(' '.join(cmd))
 
     def fix_application_list(self):
