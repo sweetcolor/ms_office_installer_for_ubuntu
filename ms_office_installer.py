@@ -14,7 +14,7 @@ class MSOfficeInstaller:
         self.programs = dict()
         self.wine_prefixes = dict()
         self.programs_path = dict()
-        self.share_folder = '%s/.local/share/' % os.environ['HOME']
+        self.share_folder = '%s/.local/share' % os.environ['HOME']
 
     def set_exec_permission(self):
         file_permissions = self.get_file_permissions()
@@ -34,7 +34,7 @@ class MSOfficeInstaller:
 
     def fix_application_list(self):
         curr_path = os.getcwd()
-        os.chdir('%s/.local/share/applications' % os.environ['HOME'])
+        os.chdir('%s/applications' % self.share_folder)
         self._parse_desktop_file()
         self._get_desktop_file_for_each_program()
         self._get_progid_for_each_wineprefix()
